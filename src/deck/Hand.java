@@ -7,8 +7,9 @@ import java.util.Observable;
 public class Hand extends Observable implements Comparable<Hand>
 {
     public static final int NUM_CARDS_IN_HAND = 5;
+    public static final int NO_CARD = -1;
 
-    public enum Type
+    public enum HandType
     {
         STRAIGHT_FLUSH,
         FOUR_OF_A_KIND,
@@ -24,7 +25,7 @@ public class Hand extends Observable implements Comparable<Hand>
 
     private Card[] hand;
     private int size;
-    private Type type;
+    private HandType type;
 
     private int primaryCard;
     private int secondaryCard;
@@ -63,10 +64,10 @@ public class Hand extends Observable implements Comparable<Hand>
     public Hand()
     {
         this.hand = new Card[NUM_CARDS_IN_HAND];
-        type = Type.INCOMPLETE;
+        type = HandType.INCOMPLETE;
         size = 0;
-        primaryCard = -1;
-        secondaryCard = -1;
+        primaryCard = NO_CARD;
+        secondaryCard = NO_CARD;
     }
 
     /** Returns the Card at index i in the Hand.
@@ -100,7 +101,7 @@ public class Hand extends Observable implements Comparable<Hand>
             hand[j] = hand[j + 1];
         size--;
 
-        updateType();
+        updateHandType();
 
         notifyChange();
 
@@ -125,7 +126,7 @@ public class Hand extends Observable implements Comparable<Hand>
 
         size++;
 
-        updateType();
+        updateHandType();
 
         notifyChange();
     }
@@ -135,6 +136,7 @@ public class Hand extends Observable implements Comparable<Hand>
     public void emptyHand()
     {
         size = 0;
+        type = HandType.INCOMPLETE;
 
         notifyChange();
     }
@@ -156,11 +158,23 @@ public class Hand extends Observable implements Comparable<Hand>
     {
         return size() == NUM_CARDS_IN_HAND;
     }
-    
-    /** Updates the type of the Hand to one of the values of Type.
+
+    /** Returns the HandType of the Hand.
+     *
+     *  @return the HandType of the Hand
      */
-    private void updateType()
+    public HandType getHandType()
     {
+        return type;
+    }
+    
+    /** Updates the type of the Hand to one of the values of HandType.
+     */
+    private void updateHandType()
+    {
+        primaryCard = NO_CARD;
+        secondaryCard = NO_CARD;
+
         if (size() == NUM_CARDS_IN_HAND)
         {
             boolean straight = isStraight();
@@ -168,44 +182,44 @@ public class Hand extends Observable implements Comparable<Hand>
 
             if (straight && flush)
             {
-                type = Type.STRAIGHT_FLUSH;
+                type = HandType.STRAIGHT_FLUSH;
             }
             else if (isFourOfAKind())
             {
-                type = Type.FOUR_OF_A_KIND;
+                type = HandType.FOUR_OF_A_KIND;
             }
             else if (flush)
             {
-                type = Type.FLUSH;
+                type = HandType.FLUSH;
             }
             else if (straight)
             {
-                type = Type.STRAIGHT;
+                type = HandType.STRAIGHT;
             }
             else if (isFullHouse())
             {
-                type = Type.FULL_HOUSE;
+                type = HandType.FULL_HOUSE;
             }
             else if (isThreeOfAKind())
             {
-                type = Type.THREE_OF_A_KIND;
+                type = HandType.THREE_OF_A_KIND;
             }
             else if (isTwoPair())
             {
-                type = Type.TWO_PAIR;
+                type = HandType.TWO_PAIR;
             }
             else if (isPair())
             {
-                type = Type.ONE_PAIR;
+                type = HandType.ONE_PAIR;
             }
             else
             {
-                type = Type.HIGH_CARD;
+                type = HandType.HIGH_CARD;
             }
         }
         else
         {
-            type = Type.INCOMPLETE;
+            type = HandType.INCOMPLETE;
         }
     }
 
@@ -393,7 +407,7 @@ public class Hand extends Observable implements Comparable<Hand>
      */
     public int compareTo(Hand h)
     {
-        // If the Hands have different Types, compare them by Type
+        // If the Hands have different HandTypes, compare them by HandType
         if (type.ordinal() != h.type.ordinal())
         {
             return h.type.ordinal() - type.ordinal();

@@ -19,10 +19,10 @@ public class Player extends Observable implements Observer
      *  
      *  @param username The username of the Player
      */
-    public Player(String username, int balance)
+    public Player(String username)
     {
         this.username = username;
-        this.balance = balance;
+        this.balance = 0;
         hand = new Hand();
         hand.addObserver(this);
         swapCards = new boolean[Hand.NUM_CARDS_IN_HAND];
@@ -148,5 +148,33 @@ public class Player extends Observable implements Observer
     public int compareTo(Player otherPlayer)
     {
         return hand.compareTo(otherPlayer.getHand());
+    }
+
+    /** Returns a String representation of the Player.
+     *
+     *  @return a String representation of the Player
+     */
+    public String toString()
+    {
+        String result = "Username: " + username + "\n";
+
+        for (int i = 0; i < hand.size(); i++)
+        {
+            if (swapCards[i])
+                result += "+ ";
+            else
+                result += "- ";
+
+            result += hand.get(i) + "\n";
+        }
+
+        result += hand.getHandType() + "\n";
+
+        if (ready)
+            result += "Ready.";
+        else
+            result += "Not ready.";
+
+        return result;
     }
 }

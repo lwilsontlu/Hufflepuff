@@ -3,8 +3,7 @@
 
 package poker;
 
-import deck.DeckOfCards;
-import deck.Hand;
+import deck.*;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -21,7 +20,7 @@ public class PokerGame extends Observable implements Observer
     
     private DeckOfCards deck;
     private Player[] players;
-    private int currentPlayers;
+    private int numPlayers;
 
     private State state;
     
@@ -37,8 +36,8 @@ public class PokerGame extends Observable implements Observer
     public PokerGame()
     {
         players = new Player[MAX_NUM_PLAYERS];
-        deck = new DeckOfCards();
-        currentPlayers = 0;
+        deck = new GraphicalDeck();
+        numPlayers = 0;
         state = State.PREGAME;
     }   
 
@@ -48,11 +47,11 @@ public class PokerGame extends Observable implements Observer
      */
     public void addPlayer(Player p)
     {
-        if (currentPlayers == MAX_NUM_PLAYERS)
+        if (numPlayers == MAX_NUM_PLAYERS)
             throw new IndexOutOfBoundsException("Too many Players.");
 
-        players[currentPlayers] = p;
-        currentPlayers++;
+        players[numPlayers] = p;
+        numPlayers++;
 
         p.addObserver(this);
 
@@ -68,19 +67,22 @@ public class PokerGame extends Observable implements Observer
     public void removePlayer(Player p)
     {
         boolean removed = false;
-        for (int i = 0; i < currentPlayers && !removed; i++)
+        for (int i = 0; i < numPlayers && !removed; i++)
         {
             if (players[i] == p)
             {
                 removed = true;
                 players[i].deleteObserver(this);
 
-                for (int j = i; j < currentPlayers - 1; j++)
+                for (int j = i; j < numPlayers - 1; j++)
                 {
                     players[j] = players[j + 1];
                 }
 
-                currentPlayers--;
+                numPlayers--;
+
+                nextState();
+
                 notifyChange();
             }
         }
@@ -96,15 +98,15 @@ public class PokerGame extends Observable implements Observer
         int i;
         int j;
         Hand playerHand;
-        for (i = 0; i < currentPlayers; i++)
+        for (i = 0; i < numPlayers; i++)
         {
             playerHand = players[i].getHand();
-            for (j = playerHand.size() - 1; j >=0; j++)
+            for (j = playerHand.size() - 1; j >=0; j--)
             {
                 if (players[i].getSwapCard(j))
                 {
-                    playerHand.remove(j);
                     players[i].setSwapCard(j, false);
+                    playerHand.remove(j);
                 }
             }
             
@@ -124,7 +126,7 @@ public class PokerGame extends Observable implements Observer
         deck.shuffle();
 
         Player p;
-        for (int i = 0; i < currentPlayers; i++)
+        for (int i = 0; i < numPlayers; i++)
         {
             p = players[i];
             p.getHand().emptyHand();
@@ -133,6 +135,16 @@ public class PokerGame extends Observable implements Observer
         }
 
         notifyChange();
+    }
+
+    /** Clears all Players' Hands
+     */
+    private void emptyHands()
+    {
+        for (int i = 0; i < numPlayers; i++)
+        {
+            players[i].getHand().emptyHand();
+        }
     }
 
     /** Returns the winners of this round.
@@ -144,23 +156,33 @@ public class PokerGame extends Observable implements Observer
         int i;
         int j;
 
-        for (j = 1; j < currentPlayers; j++)
+        // Sort Players
+        int maxIndex;
+        Player temp;
+        for (i = 0; i < numPlayers - 1; i++)
         {
-            for (i = j - 1; i >= 0
-                && (players[i].compareTo(players[j]) > 0); i--)
+            maxIndex = i;
+            for (j = i + 1; j < numPlayers; j++)
             {
-                players[i + 1] = players[i];
+                if (players[j].compareTo(players[maxIndex]) > 0)
+                {
+                    maxIndex = j;
+                }
             }
-            players[i + 1] = players[j];
+            temp = players[i];
+            players[i] = players[maxIndex];
+            players[maxIndex] = temp;
         }
 
+        // Count winners (most of the time this will be 1)
         int countWinners = 1;
-        for (i = 0; i < currentPlayers - 1
+        for (i = 0; i < numPlayers - 1
             && players[i].compareTo(players[i + 1]) == 0; i++)
         {
             countWinners++;
         }
 
+        // Make a new winners array
         Player[] winners = new Player[countWinners];
         for (i = 0; i < countWinners; i++)
         {
@@ -174,12 +196,18 @@ public class PokerGame extends Observable implements Observer
      */
     public void nextState()
     {
-        if (allPlayersReady())
+        if (numPlayers < MIN_NUM_PLAYERS)
         {
+            state = State.PREGAME;
+        }
+        else if (allPlayersReady())
+        {
+            clearPlayersReady();
+
             switch (state)
             {
                 case PREGAME:
-                    if (currentPlayers >= MIN_NUM_PLAYERS)
+                    if (numPlayers >= MIN_NUM_PLAYERS)
                     {
                         dealHand();
                         state = State.DEALT;
@@ -190,11 +218,11 @@ public class PokerGame extends Observable implements Observer
                     state = State.POSTGAME;
                     break;
                 case POSTGAME:
+                    emptyHands();
                     state = State.PREGAME;
                     break;
             }
-            
-            clearPlayersReady();
+
             notifyChange();
         }
     }
@@ -205,7 +233,7 @@ public class PokerGame extends Observable implements Observer
     {
         boolean result = true;
 
-        for (int i = 0; result && i < currentPlayers; i++)
+        for (int i = 0; result && i < numPlayers; i++)
         {
             if (!players[i].isReady())
                 result = false;
@@ -218,7 +246,7 @@ public class PokerGame extends Observable implements Observer
      */
     private void clearPlayersReady()
     {
-        for (int i = 0; i < currentPlayers; i++)
+        for (int i = 0; i < numPlayers; i++)
             players[i].setReady(false);
     }
 
@@ -235,5 +263,29 @@ public class PokerGame extends Observable implements Observer
     public void update(Observable o, Object arg)
     {
         nextState();
+    }
+
+    /** Returns a String representation of the Game
+     *
+     *  @return a String representation of the Game
+     */
+    public String toString()
+    {
+        String result = "";
+
+        for (int i = 0; i < numPlayers; i++)
+            result += players[i] + "\n\n";
+
+        result += state;
+
+        if (state == State.POSTGAME)
+        {
+            result += "\nWinners:\n";
+
+            for (Player p : getWinners())
+                result += p.getUsername() + "\n";
+        }
+
+        return result;
     }
 }

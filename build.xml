@@ -12,7 +12,7 @@
             <fileset dir="${outputDir}"/>
             <fileset dir="." includes="${resourcesDir}/**"/>
             <manifest>
-                <attribute name="Main-Class" value="PlayPoker"/>
+                <attribute name="Main-Class" value="main.PlayPoker"/>
             </manifest>
         </jar>
     </target>
