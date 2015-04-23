@@ -81,6 +81,9 @@ public class Hand extends Observable implements Comparable<Hand>
         if (i < 0 || i >= NUM_CARDS_IN_HAND)
             throw new IndexOutOfBoundsException("Hand index out of range");
 
+        if (i > size - 1)
+            return null;
+
         return hand[i];
     }
 
@@ -94,6 +97,9 @@ public class Hand extends Observable implements Comparable<Hand>
     {
         if (i < 0 || i >= NUM_CARDS_IN_HAND)
             throw new IndexOutOfBoundsException("Hand index out of range");
+
+        if (i > size - 1)
+            return null;
 
         Card result = hand[i];
         
