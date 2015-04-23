@@ -15,6 +15,11 @@ public class Player extends Observable implements Observer
     private boolean[] swapCards;
     private boolean ready;
 
+    public Player()
+    {
+        this("");
+    }
+
     /** Constructor of the Player class
      *  
      *  @param username The username of the Player

@@ -36,7 +36,7 @@ public class PokerGame extends Observable implements Observer
     public PokerGame()
     {
         players = new Player[MAX_NUM_PLAYERS];
-        deck = new GraphicalDeck();
+        deck = new DeckOfCards();
         numPlayers = 0;
         state = State.PREGAME;
     }   
@@ -89,6 +89,21 @@ public class PokerGame extends Observable implements Observer
 
         if (!removed)
             throw new RuntimeException("The Player was not found in the Game.");
+    }
+
+    public boolean isFull()
+    {
+        return numPlayers == MAX_NUM_PLAYERS;
+    }
+
+    public boolean hasPlayerWithUsername(String username)
+    {
+        for (int i = 0; i < numPlayers; i++)
+        {
+            if (players[i].getUsername().equals(username))
+                return true;
+        }
+        return false;
     }
 
     /** Swaps out everyone's cards.
@@ -145,6 +160,16 @@ public class PokerGame extends Observable implements Observer
         {
             players[i].getHand().emptyHand();
         }
+    }
+
+    public Player[] getPlayers()
+    {
+        Player[] result = new Player[numPlayers];;
+
+        for (int i = 0; i < numPlayers; i++)
+            result[i] = players[i];
+
+        return result;
     }
 
     /** Returns the winners of this round.
@@ -225,6 +250,11 @@ public class PokerGame extends Observable implements Observer
 
             notifyChange();
         }
+    }
+
+    public State getState()
+    {
+        return state;
     }
 
     /** Returns true if all Players are ready for the next State.
