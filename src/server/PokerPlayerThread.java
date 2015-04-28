@@ -5,12 +5,10 @@ import poker.Player;
 
 import java.net.Socket;
 import java.net.ServerSocket;
-import java.util.Observer;
-import java.util.Observable;
-import java.util.Scanner;
+import java.util.*;
 import java.io.*;
 
-public class PokerPlayerThread implements Observer, Runnable
+public class PokerPlayerThread extends Thread implements Observer
 {
     private ObjectOutputStream outToClient;
     private Scanner inFromClient;
@@ -33,6 +31,7 @@ public class PokerPlayerThread implements Observer, Runnable
 
     public void run()
     {
+        String commandLine;
         String[] playerCommand;
         int card;
         boolean swap;
@@ -43,7 +42,10 @@ public class PokerPlayerThread implements Observer, Runnable
         {
             try
             {
-                playerCommand = inFromClient.nextLine().split(" ");
+                commandLine = inFromClient.nextLine();
+                playerCommand = commandLine.split(" ");
+
+                System.out.println(player.getUsername() + ": " + commandLine);
 
                 if (playerCommand.length > 0)
                 {
@@ -63,12 +65,20 @@ public class PokerPlayerThread implements Observer, Runnable
                     else if (playerCommand[0].equals("quit"))
                     {
                         game.removePlayer(player);
+                        game.deleteObserver(this);
                         inGame = false;
                     }
                 }
             }
+            catch (NoSuchElementException e)
+            {
+                game.removePlayer(player);
+                game.deleteObserver(this);
+                inGame = false;
+            }
             catch (Exception e)
             {
+                e.printStackTrace();
                 System.err.println("Invalid command from "
                     + player.getUsername());
             }
@@ -81,15 +91,14 @@ public class PokerPlayerThread implements Observer, Runnable
         // TODO: make PokerGamePacket object
         try
         {
-            PokerGamePacket packet = new PokerGamePacket(game, player);
+            PokerGamePacket packet = new PokerGamePacket(game);
 
             outToClient.writeObject(packet);
             outToClient.flush();
         }
         catch (IOException e)
         {
-            System.err.println("Failed to write object to player "
-                + player.getUsername());
+            System.err.println(player.getUsername() + " disconnected.");
         }
     }
 }

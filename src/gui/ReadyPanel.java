@@ -9,22 +9,23 @@ import java.io.PrintWriter;
 
 public class ReadyPanel extends JPanel
 {
-    private PrintWriter outToServer;
+    PokerPanel client;
     private boolean canControl;
     ReadyButton readyBox;
 
-    public ReadyPanel(PrintWriter outToServer, boolean canControl)
+    public ReadyPanel(PokerPanel client, boolean canControl)
     {
-        this.outToServer = outToServer;
+        this.client = client;
         this.canControl = canControl;
 
         readyBox = new ReadyButton("Ready");
+        readyBox.setEnabled(false);
         add(readyBox);
     }
 
     public void setReady(boolean ready)
     {
-        readyBox.setEnabled(ready);
+        readyBox.setEnabled(!ready);
     }
 
     private class ReadyButton extends JButton
@@ -37,10 +38,12 @@ public class ReadyPanel extends JPanel
             {
                 public void actionPerformed(ActionEvent e)
                 {
+                    System.out.println("Button clicked");
                     if (canControl)
                     {
-                        outToServer.println("ready");
-                        outToServer.flush();
+                        System.out.println("Sending ready");
+
+                        client.sendCommand("ready");
                     }
                 }
             });

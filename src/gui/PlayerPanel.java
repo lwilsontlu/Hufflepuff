@@ -15,7 +15,7 @@ public class PlayerPanel extends JPanel
     private ReadyPanel readyPanel;
     private boolean joined;
 
-    public PlayerPanel(PrintWriter outToServer, boolean canControl)
+    public PlayerPanel(PokerPanel client, boolean canControl)
     {
         setLayout(new BorderLayout());
 
@@ -23,9 +23,9 @@ public class PlayerPanel extends JPanel
 
         nameLabel = new JLabel(UNJOINED_TEXT);
 
-        handPanel = new HandPanel(outToServer, canControl);
+        handPanel = new HandPanel(client, canControl);
 
-        readyPanel = new ReadyPanel(outToServer, canControl);
+        readyPanel = new ReadyPanel(client, canControl);
 
         add(nameLabel, BorderLayout.WEST);
         add(handPanel, BorderLayout.CENTER);

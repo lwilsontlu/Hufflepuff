@@ -293,6 +293,7 @@ public class PokerGame extends Observable implements Observer
     public void update(Observable o, Object arg)
     {
         nextState();
+        notifyChange();
     }
 
     /** Returns a String representation of the Game

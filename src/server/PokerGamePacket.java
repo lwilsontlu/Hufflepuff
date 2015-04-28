@@ -9,7 +9,7 @@ public class PokerGamePacket implements Serializable
     private PokerGame.State state;
     private Player[] players;
 
-    public PokerGamePacket(PokerGame game, Player player)
+    public PokerGamePacket(PokerGame game)
     {
         this.state = game.getState();
 
@@ -27,5 +27,17 @@ public class PokerGamePacket implements Serializable
             return null;
 
         return players[i];
+    }
+
+    public String toString()
+    {
+        String result = state + "\n";
+
+        for (int i = 0; i < players.length; i++)
+        {
+            result += players[i] + "\n";
+        }
+
+        return result;
     }
 }

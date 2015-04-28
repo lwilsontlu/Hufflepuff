@@ -13,7 +13,8 @@ import java.util.Scanner;
 public class PokerPanel extends JPanel
 {
     private PlayerPanel[] playerPanels;
-    private Socket connection;
+
+    PrintWriter outToServer;
 
     private String name;
 
@@ -21,16 +22,15 @@ public class PokerPanel extends JPanel
     {
         try
         {
-            connection = new Socket(server, port);
+            Socket connection = new Socket(server, port);
 
             name = JOptionPane.showInputDialog("Enter your name:");
-            PrintWriter outToServer =
+            outToServer =
                 new PrintWriter(connection.getOutputStream());
             ObjectInputStream ois =
                 new ObjectInputStream(connection.getInputStream());
 
-            outToServer.println(name);
-            outToServer.flush();
+            sendCommand(name);
 
             Object in = ois.readObject();
 
@@ -54,7 +54,7 @@ public class PokerPanel extends JPanel
                 int i;
                 for (i = 0; i < PokerGame.MAX_NUM_PLAYERS; i++)
                 {
-                    playerPanels[i] = new PlayerPanel(outToServer,
+                    playerPanels[i] = new PlayerPanel(this,
                         i == PokerGame.MAX_NUM_PLAYERS - 1);
                     add(playerPanels[i]);
                 }
@@ -70,6 +70,12 @@ public class PokerPanel extends JPanel
         {
             e.printStackTrace();
         }
+    }
+
+    public void sendCommand(String command)
+    {
+        outToServer.println(command);
+        outToServer.flush();
     }
 
     private class PokerIncomingInformationThread extends Thread
@@ -95,6 +101,8 @@ public class PokerPanel extends JPanel
                     if (in instanceof PokerGamePacket)
                     {
                         PokerGamePacket packet = (PokerGamePacket) in;
+
+                        System.out.println(packet);
 
                         int count = 0;
                         int i;

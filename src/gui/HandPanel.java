@@ -14,11 +14,11 @@ public class HandPanel extends JPanel
 
     private ImageIcon backImage;
 
-    private PrintWriter outToServer;
+    private PokerPanel client;
 
-    public HandPanel(PrintWriter outToServer, boolean canControl)
+    public HandPanel(PokerPanel client, boolean canControl)
     {
-        this.outToServer = outToServer;
+        this.client = client;
 
         cardLabels = new JLabel[Hand.NUM_CARDS_IN_HAND];
 
@@ -33,8 +33,8 @@ public class HandPanel extends JPanel
         CardClickPanel temp;
         for (i = 0; i < Hand.NUM_CARDS_IN_HAND; i++)
         {
-            cardLabels[i] = new JLabel();
-            temp = new CardClickPanel(outToServer, i, canControl);
+            cardLabels[i] = new JLabel("Test");
+            temp = new CardClickPanel(client, i, canControl);
             temp.add(cardLabels[i]);
             add(temp);
         }
@@ -54,6 +54,8 @@ public class HandPanel extends JPanel
         {
             if (i < player.getHand().size())
             {
+                cardLabels[i].setVisible(true);
+
                 if (hideCards || player.getSwapCard(i))
                 {
                     cardLabels[i].setIcon(backImage);
@@ -64,8 +66,6 @@ public class HandPanel extends JPanel
                     GraphicalCard card = new GraphicalCard(oldCard);
                     cardLabels[i].setIcon(card.getImage());
                 }
-
-                cardLabels[i].setVisible(true);
             }
             else
             {
@@ -76,9 +76,9 @@ public class HandPanel extends JPanel
 
     private class CardClickPanel extends JPanel
     {
-        public CardClickPanel(PrintWriter o, int c, boolean a)
+        public CardClickPanel(PokerPanel o, int c, boolean a)
         {
-            final PrintWriter out = o;
+            final PokerPanel out = o;
             final int card = c;
             final boolean canControl = a;
 
@@ -88,8 +88,7 @@ public class HandPanel extends JPanel
                 {
                     if (canControl)
                     {
-                        out.println("swap " + card);
-                        out.flush();
+                        out.sendCommand("swap " + card);
                     }
                 }
             });

@@ -99,6 +99,7 @@ public class PokerServer
                     playerThread =
                         new PokerPlayerThread(outToClient, inFromClient,
                             game, player);
+                    playerThread.start();
                 }
                 else
                 {
