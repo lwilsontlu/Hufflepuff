@@ -29,6 +29,11 @@ public class GraphicalCard extends Card
         super();
         image = null;
     }
+
+    public GraphicalCard(Card card)
+    {
+        this(card.getFace(), card.getSuit());
+    }
     
     public GraphicalCard(int rank)   
     // Precondition:  0 <= rank <= MAX_RANK

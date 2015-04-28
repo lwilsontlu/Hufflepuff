@@ -17,22 +17,18 @@ public class PokerPlayerThread implements Observer, Runnable
     private PokerGame game;
     private Player player;
 
-    public PokerPlayerThread(Socket connection, PokerGame game, Player player)
+    public PokerPlayerThread(ObjectOutputStream outToClient,
+        Scanner inFromClient, PokerGame game, Player player)
     {
-        try
-        {
-            outToClient = new ObjectOutputStream(connection.getOutputStream());
-            inFromClient = new Scanner(connection.getInputStream());
+        this.outToClient = outToClient;
+        this.inFromClient = inFromClient;
 
-            this.game = game;
-            this.player = player;
-            
-            game.addPlayer(player);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        this.game = game;
+        this.player = player;
+
+        game.addObserver(this);
+        
+        game.addPlayer(player);
     }
 
     public void run()
@@ -57,12 +53,11 @@ public class PokerPlayerThread implements Observer, Runnable
                     }
                     else if (playerCommand[0].equals("swap"))
                     {
-                        if (playerCommand.length > 2)
+                        if (playerCommand.length > 1)
                         {
                             card = Integer.parseInt(playerCommand[1]);
-                            swap = Boolean.parseBoolean(playerCommand[2]);
 
-                            player.setSwapCard(card, swap);
+                            player.setSwapCard(card, !player.getSwapCard(card));
                         }
                     }
                     else if (playerCommand[0].equals("quit"))

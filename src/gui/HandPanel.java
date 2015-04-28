@@ -6,19 +6,20 @@ import poker.Player;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import java.util.Observer;
-import java.util.Observable;
+import java.io.PrintWriter;
 
-public class HandPanel extends JPanel implements Observer
+public class HandPanel extends JPanel
 {
-    private Player player;
     private JLabel[] cardLabels;
 
     private ImageIcon backImage;
 
-    public HandPanel(Player player)
+    private PrintWriter outToServer;
+
+    public HandPanel(PrintWriter outToServer, boolean canControl)
     {
-        this.player = player;
+        this.outToServer = outToServer;
+
         cardLabels = new JLabel[Hand.NUM_CARDS_IN_HAND];
 
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -32,34 +33,39 @@ public class HandPanel extends JPanel implements Observer
         CardClickPanel temp;
         for (i = 0; i < Hand.NUM_CARDS_IN_HAND; i++)
         {
-            cardLabels[i] = new JLabel("test");
-            temp = new CardClickPanel(player, i);
+            cardLabels[i] = new JLabel();
+            temp = new CardClickPanel(outToServer, i, canControl);
             temp.add(cardLabels[i]);
             add(temp);
         }
-
-        player.addObserver(this);
     }
 
-    public void update(Observable o, Object arg)
+    public void clearHand()
     {
-        int i;
-        GraphicalCard card;
-        for (i = 0; i < Hand.NUM_CARDS_IN_HAND; i++)
+        for (int i = 0; i < cardLabels.length; i++)
         {
-            card = (GraphicalCard) player.getHand().get(i);
-            if (card != null)
-            {
-                cardLabels[i].setVisible(true);
+            cardLabels[i].setVisible(false);
+        }
+    }
 
-                if (player.getSwapCard(i))
+    public void setHand(Player player, boolean hideCards)
+    {
+        for (int i = 0; i < cardLabels.length; i++)
+        {
+            if (i < player.getHand().size())
+            {
+                if (hideCards || player.getSwapCard(i))
                 {
                     cardLabels[i].setIcon(backImage);
                 }
                 else
                 {
+                    Card oldCard = player.getHand().get(i);
+                    GraphicalCard card = new GraphicalCard(oldCard);
                     cardLabels[i].setIcon(card.getImage());
                 }
+
+                cardLabels[i].setVisible(true);
             }
             else
             {
@@ -70,16 +76,21 @@ public class HandPanel extends JPanel implements Observer
 
     private class CardClickPanel extends JPanel
     {
-        public CardClickPanel(Player p, int c)
+        public CardClickPanel(PrintWriter o, int c, boolean a)
         {
-            final Player player = p;
+            final PrintWriter out = o;
             final int card = c;
+            final boolean canControl = a;
 
             addMouseListener(new MouseAdapter()
             {
                 public void MouseClicked(MouseEvent e)
                 {
-                    player.setSwapCard(card, !player.getSwapCard(card));
+                    if (canControl)
+                    {
+                        out.println("swap " + card);
+                        out.flush();
+                    }
                 }
             });
         }

@@ -5,17 +5,17 @@ import javax.swing.*;
 
 public class PokerGUI extends JFrame
 {
-    public static final int WIDTH = 800;
-    public static final int HEIGHT = 600;
+    private static final int WIDTH = 800;
+    private static final int HEIGHT = 600;
 
-    public PokerGUI()
+    public PokerGUI(String server, int port)
     {
         super("Poker Client");
         setSize(WIDTH, HEIGHT);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel pokerPanel = new PokerPanel();
+        JPanel pokerPanel = new PokerPanel(server, port);
         add(pokerPanel);
     }
 }

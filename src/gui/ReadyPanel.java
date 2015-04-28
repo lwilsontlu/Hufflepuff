@@ -5,38 +5,45 @@ import poker.Player;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import java.util.Observer;
-import java.util.Observable;
+import java.io.PrintWriter;
 
 public class ReadyPanel extends JPanel
 {
-    private Player player;
+    private PrintWriter outToServer;
+    private boolean canControl;
+    ReadyButton readyBox;
 
-    public ReadyPanel(Player player)
+    public ReadyPanel(PrintWriter outToServer, boolean canControl)
     {
-        this.player = player;
+        this.outToServer = outToServer;
+        this.canControl = canControl;
 
-        add(new ReadyCheckBox());
+        readyBox = new ReadyButton("Ready");
+        add(readyBox);
     }
 
-    private class ReadyCheckBox extends JCheckBox implements Observer
+    public void setReady(boolean ready)
     {
-        public ReadyCheckBox()
+        readyBox.setEnabled(ready);
+    }
+
+    private class ReadyButton extends JButton
+    {
+        public ReadyButton(String text)
         {
+            super(text);
+
             addActionListener(new ActionListener()
             {
                 public void actionPerformed(ActionEvent e)
                 {
-                    player.setReady(!player.isReady());
+                    if (canControl)
+                    {
+                        outToServer.println("ready");
+                        outToServer.flush();
+                    }
                 }
             });
-
-            player.addObserver(this);
-        }
-
-        public void update(Observable o, Object arg)
-        {
-            setSelected(player.isReady());
         }
     }
 }

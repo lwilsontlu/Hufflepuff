@@ -1,61 +1,63 @@
 package gui;
 
-import poker.PokerGame;
 import poker.Player;
 
-import java.util.Observer;
-import java.util.Observable;
 import java.awt.*;
 import javax.swing.*;
+import java.io.PrintWriter;
 
-public class PlayerPanel extends JPanel implements Observer
+public class PlayerPanel extends JPanel
 {
-    public static final String UNJOINED_TEXT = "Unjoined";
+    private static final String UNJOINED_TEXT = "Unjoined";
 
-    private PokerGame game;
-    private Player player;
     private JLabel nameLabel;
     private HandPanel handPanel;
     private ReadyPanel readyPanel;
-    private JoinLeavePanel joinLeavePanel;
+    private boolean joined;
 
-    public PlayerPanel(PokerGame game)
+    public PlayerPanel(PrintWriter outToServer, boolean canControl)
     {
-        this.game = game;
-        player = new Player("Player");
+        setLayout(new BorderLayout());
 
-        setLayout(new GridLayout(1, 4));
+        joined = false;
 
         nameLabel = new JLabel(UNJOINED_TEXT);
-        handPanel = new HandPanel(player);
-        readyPanel = new ReadyPanel(player);
-        joinLeavePanel = new JoinLeavePanel(player, game);
 
-        add(nameLabel);
-        add(handPanel);
-        add(readyPanel);
-        add(joinLeavePanel);
+        handPanel = new HandPanel(outToServer, canControl);
+
+        readyPanel = new ReadyPanel(outToServer, canControl);
+
+        add(nameLabel, BorderLayout.WEST);
+        add(handPanel, BorderLayout.CENTER);
+        add(readyPanel, BorderLayout.EAST);
     }
 
-    public void setPlayer(Player p)
+    public String getName()
     {
-        this.player = player;
-    }
-
-    public Player getPlayer()
-    {
-        return player;
-    }
-
-    public void update(Observable o, Object arg)
-    {
-        if (player != null)
-        {
-            nameLabel.setText(player.getUsername());
-        }
+        if (joined)
+            return nameLabel.getText();
         else
-        {
+            return null;
+    }
+
+    public void clearPlayer()
+    {
+        if (joined)
             nameLabel.setText(UNJOINED_TEXT);
-        }
+        joined = false;
+        handPanel.clearHand();
+    }
+
+    public void setPlayer(Player player, boolean hideCards)
+    {
+        joined = true;
+        nameLabel.setText(player.getUsername());
+        readyPanel.setReady(player.isReady());
+        handPanel.setHand(player, hideCards);
+    }
+    
+    public void setPlayer(Player player)
+    {
+        setPlayer(player, false);
     }
 }

@@ -54,7 +54,7 @@ public class PokerServer
             System.out.println("Server listening on port " + port);
 
             Socket connection;
-            PrintWriter outToClient;
+            ObjectOutputStream outToClient;
             Scanner inFromClient;
             String message;
             boolean accept;
@@ -65,7 +65,8 @@ public class PokerServer
             while (true)
             {
                 connection = welcomeSocket.accept();
-                outToClient = new PrintWriter(connection.getOutputStream());
+                outToClient = 
+                    new ObjectOutputStream(connection.getOutputStream());
                 inFromClient = new Scanner(connection.getInputStream());
 
                 username = inFromClient.nextLine().trim();
@@ -88,19 +89,20 @@ public class PokerServer
                     accept = true;
                 }
 
+                System.out.println(message);
                 if (accept)
                 {
-                    outToClient.println("accept " + message);
+                    outToClient.writeObject("accept " + message);
 
                     player = new Player(username);
 
                     playerThread =
-                        new PokerPlayerThread(connection, game, player);
-                    game.addObserver(playerThread);
+                        new PokerPlayerThread(outToClient, inFromClient,
+                            game, player);
                 }
                 else
                 {
-                    outToClient.println("deny " + message);
+                    outToClient.writeObject("deny " + message);
                 }
 
                 outToClient.flush();

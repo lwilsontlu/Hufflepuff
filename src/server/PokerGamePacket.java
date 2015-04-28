@@ -6,22 +6,26 @@ import java.io.Serializable;
 
 public class PokerGamePacket implements Serializable
 {
-    private PokerGame game;
+    private PokerGame.State state;
     private Player[] players;
 
     public PokerGamePacket(PokerGame game, Player player)
     {
-        this.game = game;
+        this.state = game.getState();
 
         players = game.getPlayers();
+    }
 
-        if (game.getState() != PokerGame.State.POSTGAME)
-        {
-            for (int i = 0; i < players.length; i++)
-            {
-                if (players[i].getUsername() != player.getUsername())
-                    players[i] = (HiddenPlayer) players[i];
-            }
-        }
+    public PokerGame.State getState()
+    {
+        return state;
+    }
+
+    public Player getPlayer(int i)
+    {
+        if (i < 0 || i > players.length - 1)
+            return null;
+
+        return players[i];
     }
 }

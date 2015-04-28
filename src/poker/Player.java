@@ -2,12 +2,13 @@ package poker;
 
 import deck.Hand;
 
-import java.util.Observable;
 import java.util.Observer;
+import java.util.Observable;
+import java.io.Serializable;
 
 /** A Player in a game of Poker.
  */
-public class Player extends Observable implements Observer
+public class Player extends Observable implements Observer, Serializable
 {
     private String username;
     private int balance;

@@ -8,7 +8,9 @@
 
 package deck;
 
-public class Card implements Comparable<Card>
+import java.io.Serializable;
+
+public class Card implements Comparable<Card>, Serializable
 {
     // suits
     public static final int CLUBS = 0;
