@@ -68,7 +68,7 @@ public class PokerPanel extends JPanel
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            add(new JLabel("Could not connect to server."));
         }
     }
 

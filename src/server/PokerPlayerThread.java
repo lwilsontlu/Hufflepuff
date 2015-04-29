@@ -42,7 +42,7 @@ public class PokerPlayerThread extends Thread implements Observer
         {
             try
             {
-                commandLine = inFromClient.nextLine();
+                commandLine = inFromClient.nextLine().trim();
                 playerCommand = commandLine.split(" ");
 
                 System.out.println(player.getUsername() + ": " + commandLine);
@@ -93,6 +93,7 @@ public class PokerPlayerThread extends Thread implements Observer
         {
             PokerGamePacket packet = new PokerGamePacket(game);
 
+            System.out.println(packet);
             outToClient.writeObject(packet);
             outToClient.flush();
         }
