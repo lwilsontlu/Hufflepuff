@@ -8,9 +8,7 @@
 
 package deck;
 
-import java.io.Serializable;
-
-public class Card implements Comparable<Card>, Serializable
+public class Card implements Comparable<Card>
 {
     // suits
     public static final int CLUBS = 0;
@@ -136,6 +134,11 @@ public class Card implements Comparable<Card>, Serializable
     public int getSuit()
     {
         return suit;
+    }
+
+    public int getRank()
+    {
+        return suit * CARDS_PER_SUIT + face - TWO;
     }
     
     public void setCard(int rank)

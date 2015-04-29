@@ -21,13 +21,17 @@ public class PlayerPanel extends JPanel
 
         joined = false;
 
+        JPanel namePanel = new JPanel();
+        namePanel.setPreferredSize(new Dimension(100, 100));
+        namePanel.setLayout(new GridLayout());
         nameLabel = new JLabel(UNJOINED_TEXT);
+        namePanel.add(nameLabel);
 
         handPanel = new HandPanel(client, canControl);
 
         readyPanel = new ReadyPanel(client, canControl);
 
-        add(nameLabel, BorderLayout.WEST);
+        add(namePanel, BorderLayout.WEST);
         add(handPanel, BorderLayout.CENTER);
         add(readyPanel, BorderLayout.EAST);
     }
@@ -40,24 +44,28 @@ public class PlayerPanel extends JPanel
             return null;
     }
 
-    public void clearPlayer()
+    public void clearName()
     {
-        if (joined)
-            nameLabel.setText(UNJOINED_TEXT);
+        nameLabel.setText(UNJOINED_TEXT);
         joined = false;
         handPanel.clearHand();
+        setVisible(false);
     }
 
-    public void setPlayer(Player player, boolean hideCards)
+    public void setName(String name)
     {
+        nameLabel.setText(name);
         joined = true;
-        nameLabel.setText(player.getUsername());
-        readyPanel.setReady(player.isReady());
-        handPanel.setHand(player, hideCards);
+        setVisible(true);
     }
-    
-    public void setPlayer(Player player)
+
+    public void setReady(boolean ready)
     {
-        setPlayer(player, false);
+        readyPanel.setReady(ready);
+    }
+
+    public void setCard(int index, int rank)
+    {
+        handPanel.setCard(index, rank);
     }
 }

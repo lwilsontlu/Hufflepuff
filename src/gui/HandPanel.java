@@ -33,7 +33,7 @@ public class HandPanel extends JPanel
         CardClickPanel temp;
         for (i = 0; i < Hand.NUM_CARDS_IN_HAND; i++)
         {
-            cardLabels[i] = new JLabel("Test");
+            cardLabels[i] = new JLabel();
             temp = new CardClickPanel(client, i, canControl);
             temp.add(cardLabels[i]);
             add(temp);
@@ -44,33 +44,19 @@ public class HandPanel extends JPanel
     {
         for (int i = 0; i < cardLabels.length; i++)
         {
-            cardLabels[i].setVisible(false);
+            cardLabels[i].setIcon(backImage);
         }
     }
 
-    public void setHand(Player player, boolean hideCards)
+    public void setCard(int index, int rank)
     {
-        for (int i = 0; i < cardLabels.length; i++)
+        if (rank >= 0)
         {
-            if (i < player.getHand().size())
-            {
-                cardLabels[i].setVisible(true);
-
-                if (hideCards || player.getSwapCard(i))
-                {
-                    cardLabels[i].setIcon(backImage);
-                }
-                else
-                {
-                    Card oldCard = player.getHand().get(i);
-                    GraphicalCard card = new GraphicalCard(oldCard);
-                    cardLabels[i].setIcon(card.getImage());
-                }
-            }
-            else
-            {
-                cardLabels[i].setVisible(false);
-            }
+            cardLabels[index].setIcon(new GraphicalCard(rank).getImage());
+        }
+        else
+        {
+            cardLabels[index].setIcon(backImage);
         }
     }
 
@@ -84,7 +70,7 @@ public class HandPanel extends JPanel
 
             addMouseListener(new MouseAdapter()
             {
-                public void MouseClicked(MouseEvent e)
+                public void mouseClicked(MouseEvent e)
                 {
                     if (canControl)
                     {

@@ -54,7 +54,7 @@ public class PokerServer
             System.out.println("Server listening on port " + port);
 
             Socket connection;
-            ObjectOutputStream outToClient;
+            PrintWriter outToClient;
             Scanner inFromClient;
             String message;
             boolean accept;
@@ -66,7 +66,7 @@ public class PokerServer
             {
                 connection = welcomeSocket.accept();
                 outToClient = 
-                    new ObjectOutputStream(connection.getOutputStream());
+                    new PrintWriter(connection.getOutputStream());
                 inFromClient = new Scanner(connection.getInputStream());
 
                 username = inFromClient.nextLine().trim();
@@ -83,16 +83,21 @@ public class PokerServer
                     message = "There is already a Player with that username.";
                     accept = false;
                 }
+                else if (game.getState() != PokerGame.State.PREGAME)
+                {
+                    message = "Please join at the start of the next game.";
+                    accept = false;
+                }
                 else
                 {
-                    message = "Connected.";
+                    message = "Joined.";
                     accept = true;
                 }
 
                 System.out.println(message);
                 if (accept)
                 {
-                    outToClient.writeObject("accept " + message);
+                    outToClient.println("accept " + message);
 
                     player = new Player(username);
 
@@ -103,7 +108,7 @@ public class PokerServer
                 }
                 else
                 {
-                    outToClient.writeObject("deny " + message);
+                    outToClient.println("deny " + message);
                 }
 
                 outToClient.flush();
@@ -111,7 +116,7 @@ public class PokerServer
         }
         catch (IOException e)
         {
-            System.err.println(e);
+            System.err.println("Failed connection.");
         }
     }
 }

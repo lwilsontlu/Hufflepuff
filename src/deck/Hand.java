@@ -1,11 +1,10 @@
 package deck;
 
 import java.util.Observable;
-import java.io.Serializable;
 
 /** A Hand of Cards.
  */
-public class Hand extends Observable implements Comparable<Hand>, Serializable
+public class Hand extends Observable implements Comparable<Hand>
 {
     public static final int NUM_CARDS_IN_HAND = 5;
     public static final int NO_CARD = -1;

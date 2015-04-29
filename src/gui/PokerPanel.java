@@ -18,34 +18,28 @@ public class PokerPanel extends JPanel
 
     private String name;
 
+    private boolean alreadyShownWinnersThisRound;
+
     public PokerPanel(String server, int port)
     {
+        alreadyShownWinnersThisRound = false;
+
         try
         {
+            name = JOptionPane.showInputDialog("Enter your name:")
+                .replaceAll(" ", "");
+
             Socket connection = new Socket(server, port);
 
-            name = JOptionPane.showInputDialog("Enter your name:");
             outToServer =
                 new PrintWriter(connection.getOutputStream());
-            ObjectInputStream ois =
-                new ObjectInputStream(connection.getInputStream());
+            Scanner inFromServer =
+                new Scanner(connection.getInputStream());
 
             sendCommand(name);
 
-            Object in = ois.readObject();
+            String[] response = inFromServer.nextLine().split(" ", 2);
 
-            String[] response = null;
-            if (in instanceof String)
-            {
-                response = ((String) in).split(" ", 2);
-            }
-            else
-            {
-                System.exit(1);
-            }
-
-            System.out.println(response[0]);
-            System.out.println(response[1]);
             if (response[0].equals("accept"))
             {
                 setLayout(new GridLayout(PokerGame.MAX_NUM_PLAYERS, 1));
@@ -59,7 +53,9 @@ public class PokerPanel extends JPanel
                     add(playerPanels[i]);
                 }
 
-                new PokerIncomingInformationThread(ois).start();
+                playerPanels[playerPanels.length - 1].setName(name);
+
+                new PokerIncomingInformationThread(inFromServer).start();
             }
             else
             {
@@ -72,6 +68,11 @@ public class PokerPanel extends JPanel
         }
     }
 
+    public void setAlreadyShownWinnersThisRound(boolean b)
+    {
+        alreadyShownWinnersThisRound = b;
+    }
+
     public void sendCommand(String command)
     {
         outToServer.println(command);
@@ -80,9 +81,9 @@ public class PokerPanel extends JPanel
 
     private class PokerIncomingInformationThread extends Thread
     {
-        private ObjectInputStream inFromServer;
+        private Scanner inFromServer;
 
-        public PokerIncomingInformationThread(ObjectInputStream inFromServer)
+        public PokerIncomingInformationThread(Scanner inFromServer)
         {
             this.inFromServer = inFromServer;
         }
@@ -95,40 +96,101 @@ public class PokerPanel extends JPanel
             {
                 try
                 {
-                    Object in = inFromServer.readObject();
-                    System.out.println("Received packet from server.");
+                    String command = inFromServer.nextLine().trim();
 
-                    if (in instanceof PokerGamePacket)
+                    String[] args = command.split(" ");
+
+                    PlayerPanel changePanel = null;
+                    String userName;
+                    int index;
+                    int rank;
+                    boolean ready;
+                    boolean found;
+                    if (args.length > 0)
                     {
-                        PokerGamePacket packet = (PokerGamePacket) in;
-
-                        System.out.println(packet);
-
-                        int count = 0;
-                        int i;
-                        Player player;
-                        for (i = 0; i < playerPanels.length; i++)
+                        if (args[0].equals("playerList"))
                         {
-                            player = packet.getPlayer(i);
-
-                            if (player != null)
+                            for (int i = 0; i < playerPanels.length - 1; i++)
                             {
-                                if (player.getUsername().equals(name))
+                                if (i < args.length - 1)
                                 {
-                                    playerPanels[playerPanels.length - 1]
-                                        .setPlayer(player, false);
+                                    playerPanels[i].setName(args[i + 1]);
                                 }
                                 else
                                 {
-                                    playerPanels[count].setPlayer(player,
-                                        packet.getState()
-                                            == PokerGame.State.POSTGAME);
+                                    playerPanels[i].clearName();
+                                }
+                            }
+                        }
+                        else if (args[0].equals("newRound"))
+                        {
+                            alreadyShownWinnersThisRound = false;
+                        }
+                        else if (args[0].equals("winner")
+                            && !alreadyShownWinnersThisRound)
+                        {
+                            String winString = "Congratulations!\n";
+                            winString += "Winner(s):\n\n";
 
-                                    count++;
+                            for (int i = 1; i < args.length; i++)
+                            {
+                                winString += args[i] + "\n";
+                            }
+
+                            JOptionPane.showMessageDialog(PokerPanel.this,
+                                winString);
+
+                            alreadyShownWinnersThisRound = true;
+                        }
+                        else if (args[0].equals("player") && args.length > 3)
+                        {
+                            found = false;
+
+                            userName = args[1];
+
+                            if (userName.equals(name))
+                            {
+                                changePanel
+                                    = playerPanels[playerPanels.length - 1];
+                                found = true;
+                            }
+                            else
+                            {
+                                //other player handle
+
+                                for (int i = 0;
+                                    i < playerPanels.length - 1 && !found; i++)
+                                {
+                                    if (playerPanels[i].getName() != null
+                                        && playerPanels[i].getName()
+                                            .equals(userName))
+                                    {
+                                        changePanel = playerPanels[i];
+                                        found = true;
+                                    }
+                                }
+                            }
+
+                            if (found)
+                            {
+                                changePanel.setName(userName);
+
+                                if (args[2].equals("card") && args.length > 4)
+                                {
+                                    index = Integer.parseInt(args[3]);
+                                    rank = Integer.parseInt(args[4]);
+
+                                    changePanel.setCard(index, rank);
+                                }
+                                else if (args[2].equals("ready"))
+                                {
+                                    changePanel.setReady(
+                                        Boolean.parseBoolean(args[3]));
                                 }
                             }
                         }
                     }
+
                 }
                 catch (Exception e)
                 {

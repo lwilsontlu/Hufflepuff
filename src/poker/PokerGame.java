@@ -182,6 +182,13 @@ public class PokerGame extends Observable implements Observer
         int j;
 
         // Sort Players
+        
+        Player[] tempPlayers = new Player[numPlayers];
+        for (i = 0; i < numPlayers; i++)
+        {
+            tempPlayers[i] = players[i];
+        }
+
         int maxIndex;
         Player temp;
         for (i = 0; i < numPlayers - 1; i++)
@@ -189,20 +196,20 @@ public class PokerGame extends Observable implements Observer
             maxIndex = i;
             for (j = i + 1; j < numPlayers; j++)
             {
-                if (players[j].compareTo(players[maxIndex]) > 0)
+                if (tempPlayers[j].compareTo(tempPlayers[maxIndex]) > 0)
                 {
                     maxIndex = j;
                 }
             }
-            temp = players[i];
-            players[i] = players[maxIndex];
-            players[maxIndex] = temp;
+            temp = tempPlayers[i];
+            tempPlayers[i] = tempPlayers[maxIndex];
+            tempPlayers[maxIndex] = temp;
         }
 
         // Count winners (most of the time this will be 1)
         int countWinners = 1;
         for (i = 0; i < numPlayers - 1
-            && players[i].compareTo(players[i + 1]) == 0; i++)
+            && tempPlayers[i].compareTo(tempPlayers[i + 1]) == 0; i++)
         {
             countWinners++;
         }
@@ -211,7 +218,7 @@ public class PokerGame extends Observable implements Observer
         Player[] winners = new Player[countWinners];
         for (i = 0; i < countWinners; i++)
         {
-            winners[i] = players[i];
+            winners[i] = tempPlayers[i];
         }
 
         return winners;
@@ -266,6 +273,21 @@ public class PokerGame extends Observable implements Observer
         for (int i = 0; result && i < numPlayers; i++)
         {
             if (!players[i].isReady())
+                result = false;
+        }
+
+        return result;
+    }
+
+    /** Returns true if no Players are ready for the next State.
+     */
+    public boolean noPlayersReady()
+    {
+        boolean result = true;
+
+        for (int i = 0; result && i < numPlayers; i++)
+        {
+            if (players[i].isReady())
                 result = false;
         }
 

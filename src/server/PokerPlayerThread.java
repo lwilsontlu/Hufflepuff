@@ -10,12 +10,12 @@ import java.io.*;
 
 public class PokerPlayerThread extends Thread implements Observer
 {
-    private ObjectOutputStream outToClient;
+    private PrintWriter outToClient;
     private Scanner inFromClient;
     private PokerGame game;
     private Player player;
 
-    public PokerPlayerThread(ObjectOutputStream outToClient,
+    public PokerPlayerThread(PrintWriter outToClient,
         Scanner inFromClient, PokerGame game, Player player)
     {
         this.outToClient = outToClient;
@@ -59,7 +59,10 @@ public class PokerPlayerThread extends Thread implements Observer
                         {
                             card = Integer.parseInt(playerCommand[1]);
 
-                            player.setSwapCard(card, !player.getSwapCard(card));
+                            if (game.getState() == PokerGame.State.DEALT
+                                && !player.isReady())
+                                player.setSwapCard(card,
+                                    !player.getSwapCard(card));
                         }
                     }
                     else if (playerCommand[0].equals("quit"))
@@ -88,17 +91,17 @@ public class PokerPlayerThread extends Thread implements Observer
     public void update(Observable o, Object arg)
     {
         // Send information about the game to the player
-        // TODO: make PokerGamePacket object
         try
         {
-            PokerGamePacket packet = new PokerGamePacket(game);
+            // For easier packaging of the String to be sent
+            PokerGamePacket packet = new PokerGamePacket(game, player);
 
-            System.out.println(packet);
-            outToClient.writeObject(packet);
+            outToClient.println(packet);
             outToClient.flush();
         }
-        catch (IOException e)
+        catch (Exception e)
         {
+            e.printStackTrace();
             System.err.println(player.getUsername() + " disconnected.");
         }
     }
